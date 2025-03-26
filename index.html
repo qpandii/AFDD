@@ -32,7 +32,7 @@
         </div>
 
         <h3 id="currentTurn"></h3>
-        <button onclick="rollDice()" id="rollDiceBtn" style="display:none;">🎲 Würfeln!</button>
+        <button onclick="rollDice()">🎲 Würfeln!</button>
         <h2 id="result"></h2>
         <h3>Letzte Würfe:</h3>
         <ul id="history"></ul>
@@ -140,7 +140,6 @@
                     updateTurn();
                     document.getElementById("startGameBtn").disabled = true; // Deaktiviert den "Spiel starten"-Button nach dem Start
                     document.getElementById("restartBtn").style.display = "block"; // Zeigt den "Neustart"-Button
-                    document.getElementById("rollDiceBtn").style.display = "block"; // Zeigt den "Würfeln"-Button
                 } else {
                     alert("❌ Es müssen mindestens 2 Spieler beitreten!");
                 }
@@ -170,18 +169,13 @@
         function updateTurn() {
             db.ref("game/turn").once("value", snapshot => {
                 currentPlayerIndex = snapshot.val();
-                if (playerName === playerList[currentPlayerIndex]) {
-                    document.getElementById("currentTurn").innerText = `${playerName} ist dran! 🎉`;
-                    document.getElementById("result").innerText = "Würfeln!";
-                } else {
-                    document.getElementById("currentTurn").innerText = `${playerList[currentPlayerIndex]} ist dran! 🎉`;
-                    document.getElementById("result").innerText = "Warte auf deinen Zug!";
-                }
+                document.getElementById("currentTurn").innerText = `${playerList[currentPlayerIndex]} ist dran! 🎉`;
             });
         }
 
         // Würfeln
         function rollDice() {
+            // Überprüfen, ob der Spieler wirklich dran ist
             if (playerName !== playerList[currentPlayerIndex]) {
                 alert("❌ Du bist nicht dran! Geduld, dein Moment kommt noch!");
                 return;
@@ -216,6 +210,7 @@
 
             // Speichere das Würfelergebnis in der Firebase-Datenbank
             db.ref("rolls").push(message);
+            
             // Nächster Spieler ist dran
             currentPlayerIndex = (currentPlayerIndex + 1) % playerList.length;
             db.ref("game/turn").set(currentPlayerIndex);
